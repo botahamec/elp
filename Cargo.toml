@@ -1,6 +1,6 @@
 [package]
-name = "elp-git"
-version = "1.0.0"
+name = "elp"
+version = "1.0.1"
 authors = ["Mike White <botahamec@outlook.com>"]
 edition = "2018"
 

@@ -50,7 +50,7 @@ fn main() {
 
 	// creates the cli application
 	let matches = App::new("Elp Git Helper")
-		.version("1.0.0")
+		.version("1.0.1")
 		.author("Mike White <botahamec@outlook.com>")
 		.about("A helper for git to simplify many mundane tasks")
 
@@ -66,17 +66,14 @@ fn main() {
 		// the push command
 		.subcommand(SubCommand::with_name("push")
 			.about("Automatically add, commit, and push the repository")
-			.arg(Arg::with_name("title")
-				.short("t")
-				.long("commit title")
-				.value_name("TITLE")
+			.arg(Arg::with_name("TITLE")
 				.required(true)
 				.help("The title of the commit message. Simply, a description of what you did"))
 			.arg(Arg::with_name("message")
 				.short("m")
-				.long("commit message")
-				.value_name("MESS")
-				.help("An optional description of the what you did before pushing")))
+				.long("commit-message")
+				.value_name("MESSAGE")
+				.help("An optional description of what you did before pushing")))
 		
 		// the pull command
 		.subcommand(SubCommand::with_name("pull")
@@ -90,8 +87,8 @@ fn main() {
 		if matches.is_present("url") {start(matches.value_of("URL").unwrap());}
 	}
 	if let Some(matches) = matches.subcommand_matches("push") {
-		if matches.is_present("message") {
-			push_message(matches.value_of("TITLE").unwrap(), matches.value_of("MESS").unwrap());
+		if let Some(message) = matches.value_of("MESSAGE") {
+			push_message(matches.value_of("TITLE").unwrap(), message);
 		} else {push(matches.value_of("TITLE").unwrap());}
 	}
 	if let Some(_matches) = matches.subcommand_matches("pull") {pull();}

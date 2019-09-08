@@ -37,8 +37,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "elp-git"
-version = "1.0.0"
+name = "elp"
+version = "1.0.1"
 dependencies = [
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
