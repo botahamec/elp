@@ -50,7 +50,7 @@ fn main() {
 
 	// creates the cli application
 	let matches = App::new("Elp Git Helper")
-		.version("1.0.1")
+		.version("1.0.3")
 		.author("Mike White <botahamec@outlook.com>")
 		.about("A helper for git to simplify many mundane tasks")
 
@@ -84,7 +84,9 @@ fn main() {
 	// runs the specified command
 	if let Some(matches) = matches.subcommand_matches("start") {
 		init();
-		if matches.is_present("url") {start(matches.value_of("URL").unwrap());}
+		if let Some(url) = matches.value_of("URL") {
+			start(url);
+		}
 	}
 	if let Some(matches) = matches.subcommand_matches("push") {
 		if let Some(message) = matches.value_of("MESSAGE") {
