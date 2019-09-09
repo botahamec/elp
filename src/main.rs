@@ -59,7 +59,7 @@ fn main() {
 			.about("Create a git repository at an optional specified url")
 			.arg(Arg::with_name("url")
 				.short("u")
-				.long("remote repository url")
+				.long("remote-repository-url")
 				.value_name("URL")
 				.help("A link to the remote repository on Github.")))
 		
