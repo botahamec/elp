@@ -24,7 +24,7 @@ fn init() {
 fn start(url: &str) {
 	git(&["commit", "-a", "-m", "\"First commit\""], "Failed to commit");
 	git(&["remote", "add", "origin", url], "Failed to add the origin");
-	git(&["push", "origin", "master"], "Failed to push to the remote repo");
+	git(&["push", "-u", "origin", "master"], "Failed to push to the remote repo");
 }
 
 // add files, commits them, and pushes (with a message)
@@ -50,7 +50,7 @@ fn main() {
 
 	// creates the cli application
 	let matches = App::new("Elp Git Helper")
-		.version("1.0.3")
+		.version("1.0.4")
 		.author("Mike White <botahamec@outlook.com>")
 		.about("A helper for git to simplify many mundane tasks")
 
@@ -84,12 +84,12 @@ fn main() {
 	// runs the specified command
 	if let Some(matches) = matches.subcommand_matches("start") {
 		init();
-		if let Some(url) = matches.value_of("URL") {
+		if let Some(url) = matches.value_of("url") {
 			start(url);
 		}
 	}
 	if let Some(matches) = matches.subcommand_matches("push") {
-		if let Some(message) = matches.value_of("MESSAGE") {
+		if let Some(message) = matches.value_of("message") {
 			push_message(matches.value_of("TITLE").unwrap(), message);
 		} else {push(matches.value_of("TITLE").unwrap());}
 	}
