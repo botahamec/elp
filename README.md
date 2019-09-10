@@ -1,5 +1,5 @@
 # elp
-A helper for git to make some mundane tasks simpler
+A helper for git to make some mundane tasks simpler. When you create an empty Github repository normally, you need to do five commands to get your local folder on the remote repository. This application simplifies things dramatically by giving commands which do these things for you automatically.
 
 ## Building
 In order to build this, you'll need to have Cargo (the Rust compiler) and Git pre-installed.
