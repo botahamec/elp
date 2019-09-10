@@ -2,9 +2,11 @@
 A helper for git to make some mundane tasks simpler
 
 ## Building
-I plan to make this available with commonly used package managers at some point, and provide an installer. For now you need to clone, the repository, cargo build and put in in your.local/bin folder. You get the gist this isn't your first day here.
+In order to build this, you'll need to have Cargo (the Rust compiler) and Git pre-installed.
 
-I will mention that you need git to already be installed in order to use this. If you're building, you obviously need Cargo and you also need the clap crate, which helps with creating CLI tools.
+1. Clone the repository (git clone https://github.com/Botahamec/elp.git)
+2. Run the installer script. On Unix systems, it's make_linux.sh and on Windows it's make_win.cmd
+3. Verify that it installed correctly by typing "elp -V" in a terminal
 
 ## Usage
 Elp has a grand total of three commands, all of which require that you have a blank Github repository to start.
