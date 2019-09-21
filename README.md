@@ -4,7 +4,7 @@ A helper for git to make some mundane tasks simpler. When you create an empty Gi
 ## Building
 In order to build this, you'll need to have Cargo (the Rust compiler) and Git pre-installed.
 
- 1. Clone the repository (git clone https://github.com/Botahamec/elp.git)
+ 1. Clone the repository `git clone https://github.com/Botahamec/elp.git`
  2. Run the installer script. On Unix systems, it's make_linux.sh and on Windows it's make_win.cmd
  3. Verify that it installed correctly by typing "elp -V" in a terminal
 
@@ -14,7 +14,7 @@ Elp has a grand total of three commands, all of which require that you have a bl
 ```bash
 elp start -u [remote link]
 ```
-Creates a local repository and pushes it to the remote repository linked. For example: https://www.github.com/Botahamec/elp.git
+Creates a local repository and pushes it to the remote repository linked. For example: `https://www.github.com/Botahamec/elp.git`
 
 ```bash
 elp push [TITLE] -m [MESSAGE]
