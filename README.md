@@ -14,7 +14,7 @@ Elp has a grand total of three commands:
 ```bash
 elp start -u [remote link]
 ```
-Creates a local repository and pushes it to the remote repository linked. For example: `https://www.github.com/Botahamec/elp.git`. This requires that you've alreayd created a **blank** Github repository. There'll be conflicts if there's a README or license in the GitHub repository that you don't have.
+Creates a local repository and pushes it to the remote repository linked. For example: `https://www.github.com/Botahamec/elp.git`. This requires that you've already created a **blank** Github repository. There'll be conflicts if there's a README or license in the GitHub repository that you don't have.
 
 ```bash
 elp push [TITLE] -m [MESSAGE]
