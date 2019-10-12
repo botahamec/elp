@@ -7,11 +7,14 @@
 
 extern crate clap; // this crate is used to hand command-line arguments
 use clap::{Arg, App, SubCommand};
-use std::process::Command; // used to run git commands
+use std::process::{Command}; // used to run git commands
+use std::io::{self, Write}; // used to get output from the commands
 
 // a function to more easily call a git command
 fn git(args: &[&str], error: &str) {
-	Command::new("git").args(args).output().expect(error);
+	let output = Command::new("git").args(args).output().expect(error);
+	io::stdout().write_all(&output.stdout).unwrap();
+	io::stderr().write_all(&output.stderr).unwrap();
 }
 
 // creates a local repository
