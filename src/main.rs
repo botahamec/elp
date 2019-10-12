@@ -17,30 +17,27 @@ fn git(args: &[&str], error: &str) {
 	io::stderr().write_all(&output.stderr).unwrap();
 }
 
-// creates a local repository
-fn init() {
+// links a repository to github using a url
+fn start(url: Option<&str>) {
 	git(&["init"], "failed to intialize the repository");
 	git(&["add", "."], "failed to add files to the local repository");
-}
-
-// links a repository to github using a url
-fn start(url: &str) {
-	git(&["commit", "-a", "-m", "\"First commit\""], "Failed to commit");
-	git(&["remote", "add", "origin", url], "Failed to add the origin");
-	git(&["push", "-u", "origin", "master"], "Failed to push to the remote repo");
+	match url {
+		Some(u) => {
+			git(&["commit", "-a", "-m", "\"First commit\""], "Failed to commit");
+			git(&["remote", "add", "origin", u], "Failed to add the origin");
+			git(&["push", "-u", "origin", "master"], "Failed to push to the remote repo");
+		},
+		None => return
+	};
 }
 
 // add files, commits them, and pushes (with a message)
-fn push_message(title: &str, message: &str) {
+fn push(title: &str, message: Option<&str>) {
 	git(&["add", "."], "failed to add files to the local repository");
-	git(&["commit", "-a", "-m", title, "-m", message], "Failed to commit");
-	git(&["push", "origin", "master"], "Failed to push to the remote repo");
-}
-
-// add files, commits them, and pushes (without a message)
-fn push(title: &str) {
-	git(&["add", "."], "failed to add files to the local repository");
-	git(&["commit", "-a", "-m", title], "Failed to commit");
+	match message {
+		Some(m) => git(&["commit", "-a", "-m", title, "-m", m], "Failed to commit"),
+		None => git(&["commit", "-a", "-m", title], "Failed to commit")
+	};
 	git(&["push", "origin", "master"], "Failed to push to the remote repo");
 }
 
@@ -86,15 +83,10 @@ fn main() {
 	
 	// runs the specified command
 	if let Some(matches) = matches.subcommand_matches("start") {
-		init();
-		if let Some(url) = matches.value_of("url") {
-			start(url);
-		}
+		start(matches.value_of("url"));
 	}
 	if let Some(matches) = matches.subcommand_matches("push") {
-		if let Some(message) = matches.value_of("message") {
-			push_message(matches.value_of("TITLE").unwrap(), message);
-		} else {push(matches.value_of("TITLE").unwrap());}
+		push(matches.value_of("TITLE").unwrap(), matches.value_of("message"));
 	}
 	if let Some(_matches) = matches.subcommand_matches("pull") {pull();}
 }
