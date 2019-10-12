@@ -1,3 +1,4 @@
+#!/bin/bash
 cargo build --release
-cp target/release/elp ~/.local/bin
-chmod u+x ~/.local/bin/elp
+sudo cp target/release/elp /usr/bin/elp
+sudo chmod u+x /usr/bin/elp
