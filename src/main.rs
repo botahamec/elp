@@ -41,7 +41,7 @@ fn git(args: &[&str], error: &str) {
 // links a repository to github using a url
 fn start(url: Option<&str>) {
 	git(&["init"], "failed to intialize the repository");
-	git(&["add", "."], "failed to add files to the local repository");
+	git(&["add", "-A"], "failed to add files to the local repository");
 	match url {
 		Some(u) => {
 			git(&["commit", "-a", "-m", "First commit"], "Failed to commit");
@@ -54,7 +54,7 @@ fn start(url: Option<&str>) {
 
 // add files, commits them, and pushes (with a message)
 fn push(title: &str, message: Option<&str>) {
-	git(&["add", "."], "failed to add files to the local repository");
+	git(&["add", "-A"], "failed to add files to the local repository");
 	match message {
 		Some(m) => git(&["commit", "-a", "-m", title, "-m", m], "Failed to commit"),
 		None => git(&["commit", "-a", "-m", title], "Failed to commit")
