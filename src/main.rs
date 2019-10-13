@@ -27,7 +27,9 @@ fn get_output(command: &str, args: &[&str], error: &str) -> String {
 		.args(args)
 		.output()
 		.expect(error);
-	String::from_utf8(output.stdout).unwrap()
+	let mut string = String::from_utf8(output.stdout).unwrap();
+	string.pop();
+	string
 }
 
 // a function to more easily call a git command
