@@ -21,62 +21,59 @@ fn command(command: &str, args: &[&str], error: &str) {
 	command.wait().unwrap();
 }
 
-// runs the command in the given directory
-fn command_in_dir(command: &str, args: &[&str], dir: &str, error: &str) {
-	let mut command = Command::new(command)
-		.args(args)
-		.current_dir(dir)
-		.stdout(Stdio::inherit())
-		.stderr(Stdio::inherit())
-		.spawn()
-		.expect(error);
-	command.wait().unwrap();
-}
-
 // a function to more easily call a git command
 fn git(args: &[&str], error: &str) {
 	command("git", args, error);
 }
 
 // links a repository to github using a url
-fn start(url: Option<&str>) {
+fn start(url: Option<&str>, branch: Option<&str>) {
 	git(&["init"], "failed to intialize the repository");
 	git(&["add", "-A"], "failed to add files to the local repository");
 	match url {
 		Some(u) => {
 			git(&["commit", "-a", "-m", "First commit"], "Failed to commit");
 			git(&["remote", "add", "origin", u], "Failed to add the origin");
-			git(&["push", "-u", "origin", "master"], "Failed to push to the remote repo");
+			git(&["push", "-u", "origin", 
+					match branch {
+						Some(b) => b,
+						None =>  "master"
+					}
+				], "Failed to push to the remote repo");
 		},
 		None => return
 	};
 }
 
 // add files, commits them, and pushes (with a message)
-fn push(title: &str, message: Option<&str>) {
+fn push(title: &str, message: Option<&str>, branch: Option<&str>) {
 	git(&["add", "-A"], "failed to add files to the local repository");
 	match message {
 		Some(m) => git(&["commit", "-a", "-m", title, "-m", m], "Failed to commit"),
 		None => git(&["commit", "-a", "-m", title], "Failed to commit")
 	};
-	git(&["push", "origin", "master"], "Failed to push to the remote repo");
+	git(&["push", "origin", 
+			match branch {
+				Some(b) => b,
+				None => "master"
+			}
+		], "Failed to push to the remote repo");
 }
 
 // pulls from remote repository
-fn pull() {
-	git(&["pull", "origin", "master"], "Failed to pull from the remote repo");
+fn pull(branch: Option<&str>) {
+	git(&["pull", "origin", 
+			match branch {
+				Some(b) => b,
+				None => "master"
+			}
+		], "Failed to pull from the remote repo");
 }
 
 // updates Elp
-#[cfg(target_family = "windows")]
 fn update() {
-	command("update.cmd", &[], "Failed to update.")
-}
-
-// updates Elp
-#[cfg(target_family = "unix")]
-fn update() {
-	command("sh", &["make_unix.sh"], "Failed to update.")
+	if cfg!(target_family = "windows") {command("update.cmd", &[], "Failed to update.");}
+	else if cfg!(target_family = "unix") {command("sh", &["update.sh"], "Failed to update.");}
 }
 
 fn main() {
@@ -94,7 +91,12 @@ fn main() {
 				.short("u")
 				.long("remote-repository-url")
 				.value_name("URL")
-				.help("A link to the remote repository on Github.")))
+				.help("A link to the remote repository on Github."))
+			.arg(Arg::with_name("branch")
+				.short("b")
+				.long("branch")
+				.value_name("BRANCH")
+				.help("The branch to push to")))
 		
 		// the push command
 		.subcommand(SubCommand::with_name("push")
@@ -106,11 +108,21 @@ fn main() {
 				.short("m")
 				.long("commit-message")
 				.value_name("MESSAGE")
-				.help("An optional description of what you did before pushing")))
+				.help("An optional description of what you did before pushing"))
+			.arg(Arg::with_name("branch")
+				.short("b")
+				.long("branch")
+				.value_name("BRANCH")
+				.help("The branch to push to")))
 		
 		// the pull command
 		.subcommand(SubCommand::with_name("pull")
-			.about("Automatically pull from the repository"))
+			.about("Automatically pull from the repository")
+			.arg(Arg::with_name("branch")
+				.short("b")
+				.long("branch")
+				.value_name("BRANCH")
+				.help("The branch to pull from")))
 
 		// the update command
 		.subcommand(SubCommand::with_name("update"))
@@ -120,11 +132,11 @@ fn main() {
 	
 	// runs the specified command
 	if let Some(matches) = matches.subcommand_matches("start") {
-		start(matches.value_of("url"));
+		start(matches.value_of("url"), matches.value_of("branch"));
 	}
 	if let Some(matches) = matches.subcommand_matches("push") {
-		push(matches.value_of("TITLE").unwrap(), matches.value_of("message"));
+		push(matches.value_of("TITLE").unwrap(), matches.value_of("message"), matches.value_of("branch"));
 	}
-	if let Some(_matches) = matches.subcommand_matches("pull") {pull();}
+	if let Some(_matches) = matches.subcommand_matches("pull") {pull(matches.value_of("branch"));}
 	if let Some(_matches) = matches.subcommand_matches("update") {update();}
 }
