@@ -7,7 +7,7 @@
 
 extern crate clap; // this crate is used to hand command-line arguments
 use clap::{Arg, App, SubCommand};
-use std::process::{Command}; // used to run git commands
+use std::process::{Command, Stdio}; // used to run git commands
 use std::io::{self, Write}; // used to get output from the commands
 
 // a function to more easily call a git command
@@ -23,7 +23,7 @@ fn start(url: Option<&str>) {
 	git(&["add", "."], "failed to add files to the local repository");
 	match url {
 		Some(u) => {
-			git(&["commit", "-a", "-m", "\"First commit\""], "Failed to commit");
+			git(&["commit", "-a", "-m", "First commit"], "Failed to commit");
 			git(&["remote", "add", "origin", u], "Failed to add the origin");
 			git(&["push", "-u", "origin", "master"], "Failed to push to the remote repo");
 		},
@@ -45,6 +45,31 @@ fn push(title: &str, message: Option<&str>) {
 fn pull() {
 	git(&["pull", "origin", "master"], "Failed to pull from the remote repo");
 }
+
+// updates Elp
+#[cfg(target_family = "windows")]
+fn update() {
+	git(&["clone", "https://github.com/Botahamec/elp.git"], "Failed to clone Elp");
+	Command::new("elp/make_win.cmd")
+		.stdin(Stdio::inherit())
+		.stdout(Stdio::inherit())
+		.stderr(Stdio::inherit())
+		.spawn()
+		.expect("Failed to build Elp. You may need to run 'make_win.cmd manually");
+}
+
+// updates Elp
+#[cfg(target_family = "unix")]
+fn update() {
+	git(&["clone", "https://github.com/Botahamec/elp.git"], "Failed to clone Elp");
+	Command::new("sh").args(&["elp/make_unix.sh"])
+		.stdin(Stdio::inherit())
+		.stdout(Stdio::inherit())
+		.stderr(Stdio::inherit())
+		.spawn()
+		.expect("Failed to build Elp. You may need to run 'make_win.sh manually");
+}
+
 
 fn main() {
 
@@ -78,6 +103,10 @@ fn main() {
 		// the pull command
 		.subcommand(SubCommand::with_name("pull")
 			.about("Automatically pull from the repository"))
+
+		// the update command
+		.subcommand(SubCommand::with_name("update"))
+			.about("Clones from the master branch of the Elp repository and runs the make script")
 			
 		.get_matches();
 	
@@ -89,4 +118,5 @@ fn main() {
 		push(matches.value_of("TITLE").unwrap(), matches.value_of("message"));
 	}
 	if let Some(_matches) = matches.subcommand_matches("pull") {pull();}
+	if let Some(_matches) = matches.subcommand_matches("update") {update();}
 }
