@@ -44,17 +44,12 @@ fn get_branch(branch: Option<&str>) -> String {
 }
 
 // links a repository to github using a url
-fn start(url: Option<&str>, branch: Option<&str>) {
+fn start(url: &str, branch: Option<&str>) {
 	git(&["init"], "failed to intialize the repository");
 	git(&["add", "-A"], "failed to add files to the local repository");
-	match url {
-		Some(u) => {
-			git(&["commit", "-a", "-m", "First commit"], "Failed to commit");
-			git(&["remote", "add", "origin", u], "Failed to add the origin");
-			git(&["push", "-u", "origin", get_branch(branch).as_str()], "Failed to push to the remote repo");
-		},
-		None => return
-	};
+	git(&["commit", "-a", "-m", "First commit"], "Failed to commit");
+	git(&["remote", "add", "origin", url], "Failed to add the origin");
+	git(&["push", "-u", "origin", get_branch(branch).as_str()], "Failed to push to the remote repo");
 }
 
 // add files, commits them, and pushes (with a message)
@@ -90,9 +85,7 @@ fn main() {
 		.subcommand(SubCommand::with_name("start")
 			.about("Create a git repository at an optional specified url")
 			.arg(Arg::with_name("url")
-				.short("u")
-				.long("remote-repository-url")
-				.value_name("URL")
+				.required(true)
 				.help("A link to the remote repository on Github."))
 			.arg(Arg::with_name("branch")
 				.short("b")
@@ -134,7 +127,7 @@ fn main() {
 	
 	// runs the specified command
 	if let Some(matches) = matches.subcommand_matches("start") {
-		start(matches.value_of("url"), matches.value_of("branch"));
+		start(matches.value_of("url").unwrap(), matches.value_of("branch"));
 	}
 	if let Some(matches) = matches.subcommand_matches("push") {
 		push(matches.value_of("TITLE").unwrap(), matches.value_of("message"), matches.value_of("branch"));
