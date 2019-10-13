@@ -70,19 +70,13 @@ fn pull() {
 // updates Elp
 #[cfg(target_family = "windows")]
 fn update() {
-	git(&["clone", "https://github.com/Botahamec/elp.git"], "Failed to clone Elp");
-	command_in_dir("make_win.cmd", &[], "elp", "Failed to build. You may need to run 'make_win.cmd' manually");
-	command("rd", &["elp", "/S", "/Q"], "Failed to remove the temporary directory. You may want to delete it manually");
+	command("update.cmd", &[], "Failed to update.")
 }
 
 // updates Elp
 #[cfg(target_family = "unix")]
 fn update() {
-	git(&["clone", "https://github.com/Botahamec/elp.git"], "Failed to clone Elp");
-	let output = Command::new("sh").args(&["make_unix.sh"]).current_dir("elp").output()
-		.expect("Failed to build Elp. You may need to run 'make_win.sh manually");
-	io::stdout().write_all(&output.stdout).unwrap();
-	io::stderr().write_all(&output.stderr).unwrap();
+	command("sh", &["make_unix.sh"], "Failed to update.")
 }
 
 fn main() {
