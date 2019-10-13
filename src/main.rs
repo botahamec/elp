@@ -8,7 +8,7 @@
 extern crate clap; // this crate is used to hand command-line arguments
 use clap::{Arg, App, SubCommand};
 use std::process::{Command, Stdio}; // used to run git commands
- // used to get output from the commands
+
 
 // runs a command and waits for it to finish
 fn command(command: &str, args: &[&str], error: &str) {
@@ -21,9 +21,26 @@ fn command(command: &str, args: &[&str], error: &str) {
 	command.wait().unwrap();
 }
 
+// returns the output of a command
+fn get_output(command: &str, args: &[&str], error: &str) -> String {
+	let output = Command::new(command)
+		.args(args)
+		.output()
+		.expect(error);
+	String::from_utf8(output.stdout).unwrap()
+}
+
 // a function to more easily call a git command
 fn git(args: &[&str], error: &str) {
 	command("git", args, error);
+}
+
+// takes an option and either uses the string given or the current branch
+fn get_branch(branch: Option<&str>) -> String {
+	match branch {
+		Some(b) => String::from(b),
+		None => get_output("git", &["branch", "--show-current"], "Could not get the current branch")
+	}
 }
 
 // links a repository to github using a url
@@ -34,12 +51,7 @@ fn start(url: Option<&str>, branch: Option<&str>) {
 		Some(u) => {
 			git(&["commit", "-a", "-m", "First commit"], "Failed to commit");
 			git(&["remote", "add", "origin", u], "Failed to add the origin");
-			git(&["push", "-u", "origin", 
-					match branch {
-						Some(b) => b,
-						None =>  "master"
-					}
-				], "Failed to push to the remote repo");
+			git(&["push", "-u", "origin", get_branch(branch).as_str()], "Failed to push to the remote repo");
 		},
 		None => return
 	};
@@ -52,22 +64,12 @@ fn push(title: &str, message: Option<&str>, branch: Option<&str>) {
 		Some(m) => git(&["commit", "-a", "-m", title, "-m", m], "Failed to commit"),
 		None => git(&["commit", "-a", "-m", title], "Failed to commit")
 	};
-	git(&["push", "origin", 
-			match branch {
-				Some(b) => b,
-				None => "master"
-			}
-		], "Failed to push to the remote repo");
+	git(&["push", "origin", get_branch(branch).as_str()], "Failed to push to the remote repo");
 }
 
 // pulls from remote repository
 fn pull(branch: Option<&str>) {
-	git(&["pull", "origin", 
-			match branch {
-				Some(b) => b,
-				None => "master"
-			}
-		], "Failed to pull from the remote repo");
+	git(&["pull", "origin", get_branch(branch).as_str()], "Failed to pull from the remote repo");
 }
 
 // updates Elp
