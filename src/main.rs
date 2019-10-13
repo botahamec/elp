@@ -8,13 +8,34 @@
 extern crate clap; // this crate is used to hand command-line arguments
 use clap::{Arg, App, SubCommand};
 use std::process::{Command, Stdio}; // used to run git commands
-use std::io::{self, Write}; // used to get output from the commands
+ // used to get output from the commands
+
+// runs a command and waits for it to finish
+fn command(command: &str, args: &[&str], error: &str) {
+	let mut command = Command::new(command)
+		.args(args)
+		.stdout(Stdio::inherit())
+		.stderr(Stdio::inherit())
+		.spawn()
+		.expect(error);
+	command.wait().unwrap();
+}
+
+// runs the command in the given directory
+fn command_in_dir(command: &str, args: &[&str], dir: &str, error: &str) {
+	let mut command = Command::new(command)
+		.args(args)
+		.current_dir(dir)
+		.stdout(Stdio::inherit())
+		.stderr(Stdio::inherit())
+		.spawn()
+		.expect(error);
+	command.wait().unwrap();
+}
 
 // a function to more easily call a git command
 fn git(args: &[&str], error: &str) {
-	let output = Command::new("git").args(args).output().expect(error);
-	io::stdout().write_all(&output.stdout).unwrap();
-	io::stderr().write_all(&output.stderr).unwrap();
+	command("git", args, error);
 }
 
 // links a repository to github using a url
@@ -50,26 +71,19 @@ fn pull() {
 #[cfg(target_family = "windows")]
 fn update() {
 	git(&["clone", "https://github.com/Botahamec/elp.git"], "Failed to clone Elp");
-	Command::new("elp/make_win.cmd")
-		.stdin(Stdio::inherit())
-		.stdout(Stdio::inherit())
-		.stderr(Stdio::inherit())
-		.spawn()
-		.expect("Failed to build Elp. You may need to run 'make_win.cmd manually");
+	command_in_dir("make_win.cmd", &[], "elp", "Failed to build. You may need to run 'make_win.cmd' manually");
+	command("rd", &["elp", "/S", "/Q"], "Failed to remove the temporary directory. You may want to delete it manually");
 }
 
 // updates Elp
 #[cfg(target_family = "unix")]
 fn update() {
 	git(&["clone", "https://github.com/Botahamec/elp.git"], "Failed to clone Elp");
-	Command::new("sh").args(&["elp/make_unix.sh"])
-		.stdin(Stdio::inherit())
-		.stdout(Stdio::inherit())
-		.stderr(Stdio::inherit())
-		.spawn()
+	let output = Command::new("sh").args(&["make_unix.sh"]).current_dir("elp").output()
 		.expect("Failed to build Elp. You may need to run 'make_win.sh manually");
+	io::stdout().write_all(&output.stdout).unwrap();
+	io::stderr().write_all(&output.stderr).unwrap();
 }
-
 
 fn main() {
 
