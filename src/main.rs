@@ -196,7 +196,7 @@ fn main() {
 				.value_name("BRANCH")
 				.help("The branch to push to"))
 			.arg(Arg::with_name("no-commit")
-				.short("nc")
+				.short("n")
 				.long("no-commit")
 				.help("Does not create a commit")))
 		
@@ -225,7 +225,7 @@ fn main() {
 		start(matches.value_of("url").unwrap(), matches.value_of("branch"), verbosity, quiet);
 	}
 	if let Some(matches) = matches.subcommand_matches("push") {
-		let commit = matches.occurrences_of("nc") == 0;
+		let commit = matches.occurrences_of("n") == 0;
 		push(matches.value_of("TITLE").unwrap(), matches.value_of("message"), matches.value_of("branch"), commit, verbosity, quiet);
 	}
 	if let Some(_matches) = matches.subcommand_matches("pull") {pull(matches.value_of("branch"), verbosity, quiet);}
