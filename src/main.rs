@@ -150,7 +150,7 @@ fn main() {
 
 	// creates the cli application
 	let matches = App::new("Elp Git Helper")
-		.version("1.0.4")
+		.version("1.1.0")
 		.author("Mike White <botahamec@outlook.com>")
 		.about("A helper for git to simplify many mundane tasks")
 
