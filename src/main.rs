@@ -117,9 +117,9 @@ fn start(url: &str, branch: Option<&str>, verbosity: usize, quiet: bool) {
 }
 
 // add files, commits them, and pushes (with a message)
-fn push(title: &str, message: Option<&str>, branch: Option<&str>, verbosity: usize, quiet: bool) {
+fn push(title: &str, message: Option<&str>, branch: Option<&str>, commit: bool, verbosity: usize, quiet: bool) {
 	git_add(verbosity, quiet);
-	git_commit(title, message, verbosity, quiet);
+	if commit {git_commit(title, message, verbosity, quiet);}
 	git_push(branch, verbosity, quiet);
 }
 
@@ -195,6 +195,10 @@ fn main() {
 				.long("branch")
 				.value_name("BRANCH")
 				.help("The branch to push to")))
+			.arg(Arg::with_name("no-commit")
+				.short("nc")
+				.long("no-commit")
+				.help("Does not create a commit"))
 		
 		// the pull command
 		.subcommand(SubCommand::with_name("pull")
@@ -221,7 +225,8 @@ fn main() {
 		start(matches.value_of("url").unwrap(), matches.value_of("branch"), verbosity, quiet);
 	}
 	if let Some(matches) = matches.subcommand_matches("push") {
-		push(matches.value_of("TITLE").unwrap(), matches.value_of("message"), matches.value_of("branch"), verbosity, quiet);
+		let commit = matches.occurrences_of("nc") == 0;
+		push(matches.value_of("TITLE").unwrap(), matches.value_of("message"), matches.value_of("branch"), commit, verbosity, quiet);
 	}
 	if let Some(_matches) = matches.subcommand_matches("pull") {pull(matches.value_of("branch"), verbosity, quiet);}
 	if let Some(_matches) = matches.subcommand_matches("update") {update(verbosity);}
