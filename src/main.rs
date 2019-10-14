@@ -37,6 +37,68 @@ fn git(args: &[&str], error: &str) {
 	command("git", args, error);
 }
 
+fn git_add(verbosity: usize, quiet: bool) {
+	if quiet {git(&["add", "-A", "-q"], "failed to add files to the local repository");}
+	else {
+		match verbosity {
+			0 => git(&["add", "-A"], "failed to add files to the local repository"),
+			_ => git(&["add", "-A", "-v"], "failed to add files to the local repository")
+		}
+	}
+}
+
+fn git_commit(title: &str, message: Option<&str>, verbosity: usize, quiet: bool) {
+	if quiet {
+		match message {
+			Some(m) => git(&["commit", "-a", "-q", "-m", title, "-m", m], "Failed to commit"),
+			None => git(&["commit", "-a", "-q", "-m", title], "Failed to commit")
+		};
+	} else {
+		match message {
+			Some(m) => match verbosity {
+				0 => git(&["commit", "-a", "-m", title, "-m", m], "Failed to commit"),
+				1 => git(&["commit", "-a", "-v", "-m", title, "-m", m], "Failed to commit"),
+				_ => git(&["commit", "-a", "-vv", "-m", title, "-m", m], "Failed to commit"),
+			},
+			None =>  match verbosity {
+				0 => git(&["commit", "-a", "-m", title], "Failed to commit"),
+				1 => git(&["commit", "-a", "-v", "-m", title], "Failed to commit"),
+				_ => git(&["commit", "-a", "-vv", "-m", title], "Failed to commit"),
+			}
+		};
+	}
+}
+
+fn add_origin(url: &str, verbosity: usize, quiet: bool) {
+	if quiet {git(&["remote", "-q", "add", "origin", url], "Failed to add the origin");}
+	else {
+		match verbosity {
+			0 => git(&["remote", "add", "origin", url], "Failed to add the origin"),
+			_ => git(&["remote", "-v", "add", "origin", url], "Failed to add the origin"),
+		};
+	}
+}
+
+fn git_push(branch: Option<&str>, verbosity: usize, quiet: bool) {
+	if quiet {git(&["push", "-q", "-u", "origin", get_branch(branch).as_str()], "Failed to push to the remote repo");}
+	else {
+		match verbosity {
+			0 => git(&["push", "-u", "origin", get_branch(branch).as_str()], "Failed to push to the remote repo"),
+			_ => git(&["push", "-v", "-u", "origin", get_branch(branch).as_str()], "Failed to push to the remote repo"),
+		};
+	}
+}
+
+fn git_pull(branch: Option<&str>, verbosity: usize, quiet: bool) {
+	if quiet {git(&["pull", "-q", "origin", get_branch(branch).as_str()], "Failed to pull from the remote repository");}
+	else {
+		match verbosity {
+			0 => git(&["pull", "origin", get_branch(branch).as_str()], "Failed to pull from the remote repo"),
+			_ => git(&["pull", "-v", "origin", get_branch(branch).as_str()], "Failed to pull from the remote repo")
+		};
+	}
+}
+
 // takes an option and either uses the string given or the current branch
 fn get_branch(branch: Option<&str>) -> String {
 	match branch {
@@ -46,50 +108,24 @@ fn get_branch(branch: Option<&str>) -> String {
 }
 
 // links a repository to github using a url
-fn start(url: &str, branch: Option<&str>, verbosity: usize) {
+fn start(url: &str, branch: Option<&str>, verbosity: usize, quiet: bool) {
 	git(&["init"], "failed to intialize the repository");
-	match verbosity {
-		0 => git(&["add", "-A"], "failed to add files to the local repository"),
-		_ => git(&["add", "-A", "-v"], "failed to add files to the local repository")
-	}
-	match verbosity {
-		0 => git(&["commit", "-a", "-m", "First commit"], "Failed to commit"),
-		1 => git(&["commit", "-a", "-v", "-m", "First commit"], "Failed to commit"),
-		_ => git(&["commit", "-a", "-vv", "-m", "First commit"], "Failed to commit"),
-	};
-	match verbosity {
-		0 => git(&["remote", "add", "origin", url], "Failed to add the origin"),
-		_ => git(&["remote", "-v", "add", "origin", url], "Failed to add the origin"),
-	};
-	git(&["push", "-u", "origin", get_branch(branch).as_str()], "Failed to push to the remote repo");
+	git_add(verbosity, quiet);
+	git_commit("First commit", None, verbosity, quiet);
+	add_origin(url, verbosity, quiet);
+	git_push(branch, verbosity, quiet);
 }
 
 // add files, commits them, and pushes (with a message)
-fn push(title: &str, message: Option<&str>, branch: Option<&str>, verbosity: usize) {
-	match verbosity {
-		0 => git(&["add", "-A"], "failed to add files to the local repository"),
-		_ => git(&["add", "-A", "-v"], "failed to add files to the local repository")
-	}
-	match message {
-		Some(m) => match verbosity {
-			0 => git(&["commit", "-a", "-m", title, "-m", m], "Failed to commit"),
-			1 => git(&["commit", "-a", "-v", "-m", title, "-m", m], "Failed to commit"),
-			_ => git(&["commit", "-a", "-vv", "-m", title, "-m", m], "Failed to commit"),
-		},
-		None => git(&["commit", "-a", "-m", title], "Failed to commit")
-	};
-	match verbosity {
-		0 => git(&["push", "origin", get_branch(branch).as_str()], "Failed to push to the remote repo"),
-		_ => git(&["push", "-v", "origin", get_branch(branch).as_str()], "Failed to push to the remote repo"),
-	};
+fn push(title: &str, message: Option<&str>, branch: Option<&str>, verbosity: usize, quiet: bool) {
+	git_add(verbosity, quiet);
+	git_commit(title, message, verbosity, quiet);
+	git_push(branch, verbosity, quiet);
 }
 
 // pulls from remote repository
-fn pull(branch: Option<&str>, verbosity: usize) {
-	match verbosity {
-		0 => git(&["pull", "origin", get_branch(branch).as_str()], "Failed to pull from the remote repo"),
-		_ => git(&["pull", "-v", "origin", get_branch(branch).as_str()], "Failed to pull from the remote repo")
-	};
+fn pull(branch: Option<&str>, verbosity: usize, quiet: bool) {
+	git_pull(branch, verbosity, quiet)
 }
 
 // updates Elp
@@ -124,6 +160,12 @@ fn main() {
 			.long("verbose")
 			.multiple(true)
 			.help("Prints out a lot of information"))
+
+		// the quiet argument
+		.arg(Arg::with_name("quiet")
+			.short("q")
+			.long("quiet")
+			.help("Shows no output"))
 
 		// the start command
 		.subcommand(SubCommand::with_name("start")
@@ -170,14 +212,17 @@ fn main() {
 		.get_matches();
 	
 	let verbosity = matches.occurrences_of("verbose") as usize;
+	let quietness = matches.occurrences_of("quiet") as usize;
+	if quietness > 0 && verbosity > 0 {panic!("Cannot be verbose and quiet at the same time!");}
+	let quiet = quietness > 0;
 
 	// runs the specified command
 	if let Some(matches) = matches.subcommand_matches("start") {
-		start(matches.value_of("url").unwrap(), matches.value_of("branch"), verbosity);
+		start(matches.value_of("url").unwrap(), matches.value_of("branch"), verbosity, quiet);
 	}
 	if let Some(matches) = matches.subcommand_matches("push") {
-		push(matches.value_of("TITLE").unwrap(), matches.value_of("message"), matches.value_of("branch"), verbosity);
+		push(matches.value_of("TITLE").unwrap(), matches.value_of("message"), matches.value_of("branch"), verbosity, quiet);
 	}
-	if let Some(_matches) = matches.subcommand_matches("pull") {pull(matches.value_of("branch"), verbosity);}
+	if let Some(_matches) = matches.subcommand_matches("pull") {pull(matches.value_of("branch"), verbosity, quiet);}
 	if let Some(_matches) = matches.subcommand_matches("update") {update(verbosity);}
 }
