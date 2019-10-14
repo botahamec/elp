@@ -129,7 +129,7 @@ fn pull(branch: Option<&str>, verbosity: usize, quiet: bool) {
 }
 
 // updates Elp
-fn update(verbosity: usize) {
+/*fn update(verbosity: usize) {
 	if cfg!(target_family = "windows") {
 		match verbosity {
 			0 => command("update.cmd", &[], "Failed to update."),
@@ -144,7 +144,7 @@ fn update(verbosity: usize) {
 			_ => command("sh", &["vvupdate.sh"], "Failed to update."),
 		};
 	}
-}
+}*/
 
 fn main() {
 
@@ -194,11 +194,11 @@ fn main() {
 				.short("b")
 				.long("branch")
 				.value_name("BRANCH")
-				.help("The branch to push to")))
+				.help("The branch to push to"))
 			.arg(Arg::with_name("no-commit")
 				.short("nc")
 				.long("no-commit")
-				.help("Does not create a commit"))
+				.help("Does not create a commit")))
 		
 		// the pull command
 		.subcommand(SubCommand::with_name("pull")
@@ -210,8 +210,8 @@ fn main() {
 				.help("The branch to pull from")))
 
 		// the update command
-		.subcommand(SubCommand::with_name("update"))
-			.about("Clones from the master branch of the Elp repository and runs the make script")
+		//.subcommand(SubCommand::with_name("update"))
+		//	.about("Clones from the master branch of the Elp repository and runs the make script")
 			
 		.get_matches();
 	
@@ -229,5 +229,5 @@ fn main() {
 		push(matches.value_of("TITLE").unwrap(), matches.value_of("message"), matches.value_of("branch"), commit, verbosity, quiet);
 	}
 	if let Some(_matches) = matches.subcommand_matches("pull") {pull(matches.value_of("branch"), verbosity, quiet);}
-	if let Some(_matches) = matches.subcommand_matches("update") {update(verbosity);}
+	//if let Some(_matches) = matches.subcommand_matches("update") {update(verbosity);}
 }
