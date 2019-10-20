@@ -150,7 +150,7 @@ fn main() {
 
 	// creates the cli application
 	let matches = App::new("Elp Git Helper")
-		.version("1.1.0")
+		.version("1.1.1")
 		.author("Mike White <botahamec@outlook.com>")
 		.about("A helper for git to simplify many mundane tasks")
 
@@ -226,7 +226,6 @@ fn main() {
 	}
 	if let Some(matches) = matches.subcommand_matches("push") {
 		let commit = matches.occurrences_of("no-commit") == 0;
-		println!("{}", commit);
 		push(matches.value_of("TITLE").unwrap(), matches.value_of("message"), matches.value_of("branch"), commit, verbosity, quiet);
 	}
 	if let Some(_matches) = matches.subcommand_matches("pull") {pull(matches.value_of("branch"), verbosity, quiet);}
