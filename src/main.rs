@@ -225,7 +225,8 @@ fn main() {
 		start(matches.value_of("url").unwrap(), matches.value_of("branch"), verbosity, quiet);
 	}
 	if let Some(matches) = matches.subcommand_matches("push") {
-		let commit = matches.occurrences_of("n") == 0;
+		let commit = matches.occurrences_of("no-commit") == 0;
+		println!("{}", commit);
 		push(matches.value_of("TITLE").unwrap(), matches.value_of("message"), matches.value_of("branch"), commit, verbosity, quiet);
 	}
 	if let Some(_matches) = matches.subcommand_matches("pull") {pull(matches.value_of("branch"), verbosity, quiet);}
