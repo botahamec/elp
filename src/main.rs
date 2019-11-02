@@ -150,7 +150,7 @@ fn main() {
 
 	// creates the cli application
 	let matches = App::new("Elp Git Helper")
-		.version("1.1.1")
+		.version("1.1.2")
 		.author("Mike White <botahamec@outlook.com>")
 		.about("A helper for git to simplify many mundane tasks")
 
@@ -177,7 +177,15 @@ fn main() {
 				.short("b")
 				.long("branch")
 				.value_name("BRANCH")
-				.help("The branch to push to")))
+				.help("The branch to push to"))
+			.arg(Arg::with_name("verbose")
+				.short("v")
+				.long("verbose")
+				.help("Prints out a lot of information"))
+			.arg(Arg::with_name("quiet")
+				.short("q")
+				.long("quiet")
+				.help("Shows no output")))
 		
 		// the push command
 		.subcommand(SubCommand::with_name("push")
@@ -198,7 +206,15 @@ fn main() {
 			.arg(Arg::with_name("no-commit")
 				.short("n")
 				.long("no-commit")
-				.help("Does not create a commit")))
+				.help("Does not create a commit"))
+			.arg(Arg::with_name("verbose")
+				.short("v")
+				.long("verbose")
+				.help("Prints out a lot of information"))
+			.arg(Arg::with_name("quiet")
+				.short("q")
+				.long("quiet")
+				.help("Shows no output")))
 		
 		// the pull command
 		.subcommand(SubCommand::with_name("pull")
@@ -207,7 +223,15 @@ fn main() {
 				.short("b")
 				.long("branch")
 				.value_name("BRANCH")
-				.help("The branch to pull from")))
+				.help("The branch to pull from"))
+			.arg(Arg::with_name("verbose")
+				.short("v")
+				.long("verbose")
+				.help("Prints out a lot of information"))
+			.arg(Arg::with_name("quiet")
+				.short("q")
+				.long("quiet")
+				.help("Shows no output")))
 
 		// the update command
 		//.subcommand(SubCommand::with_name("update"))
