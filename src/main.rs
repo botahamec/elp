@@ -146,6 +146,14 @@ fn pull(branch: Option<&str>, verbosity: usize, quiet: bool) {
 	}
 }*/
 
+// runs if no subcommand is supplied
+fn elp_main(verbosity: usize, quiet: bool) {
+	git_pull(None, verbosity, quiet);
+	git_add(verbosity, quiet);
+	git_commit("Auto-commit", None, verbosity, quiet);
+	git_push(None, verbosity, quiet);
+}
+
 fn main() {
 
 	// creates the cli application
@@ -191,7 +199,6 @@ fn main() {
 		.subcommand(SubCommand::with_name("push")
 			.about("Automatically add, commit, and push the repository")
 			.arg(Arg::with_name("TITLE")
-				.required(true)
 				.help("The title of the commit message. Simply, a description of what you did"))
 			.arg(Arg::with_name("message")
 				.short("m")
@@ -247,11 +254,10 @@ fn main() {
 	// runs the specified command
 	if let Some(matches) = matches.subcommand_matches("start") {
 		start(matches.value_of("url").unwrap(), matches.value_of("branch"), verbosity, quiet);
-	}
-	if let Some(matches) = matches.subcommand_matches("push") {
+	} else if let Some(matches) = matches.subcommand_matches("push") {
 		let commit = matches.occurrences_of("no-commit") == 0;
 		push(matches.value_of("TITLE").unwrap(), matches.value_of("message"), matches.value_of("branch"), commit, verbosity, quiet);
-	}
-	if let Some(_matches) = matches.subcommand_matches("pull") {pull(matches.value_of("branch"), verbosity, quiet);}
+	} else if let Some(_matches) = matches.subcommand_matches("pull") {pull(matches.value_of("branch"), verbosity, quiet);}
 	//if let Some(_matches) = matches.subcommand_matches("update") {update(verbosity);}
+	else {elp_main(verbosity, quiet);}
 }
