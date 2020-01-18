@@ -1,5 +1,4 @@
 @echo off
-git clone https://github.com/Botahamec/elp.git
 cd elp
 cargo build --release
 XCOPY /E /I /Y target\release "C:\Program Files\elp\"

@@ -166,6 +166,7 @@ fn pull(branch: Option<&str>, verbosity: usize, quiet: bool) {
 
 // updates Elp
 fn update(verbosity: usize) {
+	git(&["clone", "https://github.com/Botahamec/elp.git"], "Unable to find latest version of Elp");
 	if cfg!(target_family = "windows") {
 		match verbosity {
 			0 => command("update.cmd", &[], "Failed to update."),
@@ -174,14 +175,13 @@ fn update(verbosity: usize) {
 		};
 	}
 	else if cfg!(target_family = "unix") {
-		git(&["clone", "https://github.com/Botahamec/elp.git"], "Unable to find latest version of Elp");
 		match verbosity {
 			0 => command_spawn("sh", &["elp/update.sh"], "Unable to run update script"),
 			1 => command_spawn("sh", &["elp/vupdate.sh"], "Unable to run update script"),
 			_ => command_spawn("sh", &["elp/vvupdate.sh"], "Unable to run update script"),
 		};
-		exit(0);
 	}
+	exit(0);
 }
 
 // runs if no subcommand is supplied
