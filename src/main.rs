@@ -7,7 +7,7 @@
 
 extern crate clap; // this crate is used to hand command-line arguments
 use clap::{Arg, App, SubCommand};
-use std::process::{Command, Stdio, exit}; // used to interact with command-line
+use std::process::{Command, Stdio}; // used to interact with command-line
 
 
 // runs a command and waits for it to finish
