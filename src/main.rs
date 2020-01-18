@@ -118,12 +118,14 @@ fn start(url: &str, branch: Option<&str>, verbosity: usize, quiet: bool) {
 
 // add files, commits them, and pushes (with a message)
 fn push(title: Option<&str>, message: Option<&str>, branch: Option<&str>, commit: bool, verbosity: usize, quiet: bool) {
-	if title == None && commit {
-		println!("A title must be given if you plan to commit");
-		exit(1);
+	let push_title : &str;
+	if let Some(temp_title) = title {
+		push_title = temp_title;
+	} else {
+		push_title = "Auto-commit"
 	}
 	git_add(verbosity, quiet);
-	if commit {git_commit(title.unwrap(), message, verbosity, quiet);}
+	if commit {git_commit(push_title, message, verbosity, quiet);}
 	git_push(branch, verbosity, quiet);
 }
 
@@ -133,7 +135,8 @@ fn pull(branch: Option<&str>, verbosity: usize, quiet: bool) {
 }
 
 // updates Elp
-/*fn update(verbosity: usize) {
+/*
+fn update(verbosity: usize) {
 	if cfg!(target_family = "windows") {
 		match verbosity {
 			0 => command("update.cmd", &[], "Failed to update."),
@@ -148,7 +151,8 @@ fn pull(branch: Option<&str>, verbosity: usize, quiet: bool) {
 			_ => command("sh", &["vvupdate.sh"], "Failed to update."),
 		};
 	}
-}*/
+}
+*/
 
 // runs if no subcommand is supplied
 fn elp_main(verbosity: usize, quiet: bool) {
