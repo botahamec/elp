@@ -7,7 +7,7 @@
 
 extern crate clap; // this crate is used to hand command-line arguments
 use clap::{Arg, App, SubCommand};
-use std::process::{Command, Stdio}; // used to run git commands
+use std::process::{Command, Stdio, exit}; // used to interact with command-line
 
 
 // runs a command and waits for it to finish
@@ -117,9 +117,13 @@ fn start(url: &str, branch: Option<&str>, verbosity: usize, quiet: bool) {
 }
 
 // add files, commits them, and pushes (with a message)
-fn push(title: &str, message: Option<&str>, branch: Option<&str>, commit: bool, verbosity: usize, quiet: bool) {
+fn push(title: Option<&str>, message: Option<&str>, branch: Option<&str>, commit: bool, verbosity: usize, quiet: bool) {
+	if title == None && commit {
+		println!("A title must be given if you plan to commit");
+		exit(1);
+	}
 	git_add(verbosity, quiet);
-	if commit {git_commit(title, message, verbosity, quiet);}
+	if commit {git_commit(title.unwrap(), message, verbosity, quiet);}
 	git_push(branch, verbosity, quiet);
 }
 
@@ -256,7 +260,7 @@ fn main() {
 		start(matches.value_of("url").unwrap(), matches.value_of("branch"), verbosity, quiet);
 	} else if let Some(matches) = matches.subcommand_matches("push") {
 		let commit = matches.occurrences_of("no-commit") == 0;
-		push(matches.value_of("TITLE").unwrap(), matches.value_of("message"), matches.value_of("branch"), commit, verbosity, quiet);
+		push(matches.value_of("TITLE"), matches.value_of("message"), matches.value_of("branch"), commit, verbosity, quiet);
 	} else if let Some(_matches) = matches.subcommand_matches("pull") {pull(matches.value_of("branch"), verbosity, quiet);}
 	//if let Some(_matches) = matches.subcommand_matches("update") {update(verbosity);}
 	else {elp_main(verbosity, quiet);}
