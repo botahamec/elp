@@ -8,7 +8,7 @@
 extern crate clap; // this crate is used to hand command-line arguments
 use clap::{Arg, App, SubCommand};
 use std::process::{Command, Stdio}; // used to interact with command-line
-use std::io::stdin; // used to read user input
+use std::io::{stdin, stdout, Write}; // used to read user input
 
 
 // runs a command and waits for it to finish
@@ -23,10 +23,13 @@ fn command(command: &str, args: &[&str], error: &str) {
 }
 
 // prompts the user for input
+#[allow(unused_must_use)]
 fn input(prompt: &str) -> String {
 	let mut answer = String::new();
 	print!("{} ", prompt);
+	stdout().flush();
 	stdin().read_line(&mut answer);
+	answer = String::from(answer.trim_end());
 	answer
 }
 
