@@ -7,7 +7,7 @@
 
 extern crate clap; // this crate is used to hand command-line arguments
 use clap::{Arg, App, SubCommand};
-use std::process::{Command, Stdio}; // used to interact with command-line
+use std::process::{Command, Stdio, exit}; // used to interact with command-line
 use std::io::{stdin, stdout, Write}; // used to read user input
 
 
@@ -20,6 +20,16 @@ fn command(command: &str, args: &[&str], error: &str) {
 		.spawn()
 		.expect(error);
 	command.wait().unwrap();
+}
+
+// runs a command but doesn't wait for it to finish
+fn command_spawn(command: &str, args: &[&str], error: &str) {
+	Command::new(command)
+		.args(args)
+		.stdout(Stdio::inherit())
+		.stderr(Stdio::inherit())
+		.spawn()
+		.expect(error);
 }
 
 // prompts the user for input
@@ -155,7 +165,6 @@ fn pull(branch: Option<&str>, verbosity: usize, quiet: bool) {
 }
 
 // updates Elp
-/*
 fn update(verbosity: usize) {
 	if cfg!(target_family = "windows") {
 		match verbosity {
@@ -165,14 +174,15 @@ fn update(verbosity: usize) {
 		};
 	}
 	else if cfg!(target_family = "unix") {
+		git(&["clone", "https://github.com/Botahamec/elp.git"], "Unable to find latest version of Elp");
 		match verbosity {
-			0 => command("sh", &["update.sh"], "Failed to update."),
-			1 => command("sh", &["vupdate.sh"], "Failed to update."),
-			_ => command("sh", &["vvupdate.sh"], "Failed to update."),
+			0 => command_spawn("sh", &["elp/update.sh"], "Unable to run update script"),
+			1 => command_spawn("sh", &["elp/vupdate.sh"], "Unable to run update script"),
+			_ => command_spawn("sh", &["elp/vvupdate.sh"], "Unable to run update script"),
 		};
+		exit(0);
 	}
 }
-*/
 
 // runs if no subcommand is supplied
 fn elp_main(verbosity: usize, quiet: bool) {
@@ -281,8 +291,8 @@ fn main() {
 			.about("Sets up Git options"))
 
 		// the update command
-		//.subcommand(SubCommand::with_name("update"))
-		//	.about("Clones from the master branch of the Elp repository and runs the make script")
+		.subcommand(SubCommand::with_name("update"))
+			.about("Clones from the master branch of the Elp repository and runs the make script")
 
 		.get_matches();
 
@@ -299,6 +309,6 @@ fn main() {
 		push(matches.value_of("TITLE"), matches.value_of("message"), matches.value_of("branch"), commit, verbosity, quiet);
 	} else if let Some(_matches) = matches.subcommand_matches("pull") {pull(matches.value_of("branch"), verbosity, quiet);}
 	else if let Some(_matches) = matches.subcommand_matches("setup") {setup();}
-	//if let Some(_matches) = matches.subcommand_matches("update") {update(verbosity);}
+	else if let Some(_matches) = matches.subcommand_matches("update") {update(verbosity);}
 	else {elp_main(verbosity, quiet);}
 }

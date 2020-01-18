@@ -1,4 +1,4 @@
-git clone https://github.com/Botahamec/elp.git
+#!/bin/bash
 cd elp
 cargo build --release -v
 sudo cp -R target/elp /usr/bin/elp
