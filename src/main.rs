@@ -200,6 +200,18 @@ fn setup() {
 	set_config("Editor for Commit Messages:", "core.editor");
 }
 
+fn save_auth() {
+	if cfg!(target_os = "windows") {
+		git(&["config", "--global", "credential.helper", "wincred"], "Unable to configure Git");
+	} else if cfg!(target_os = "macos") {
+		git(&["config", "--global", "credential.helper", "osxkeychain"], "Unable to configure Git. Do you have osxkeychain?");
+	} else if cfg!(target_os = "linux") {
+		git(&["config", "--global", "credential.helper", "cache"], "Unable to configure Git");
+	} else {
+		println!("Your OS does not support this feature.");
+	}
+}
+
 fn main() {
 
 	// creates the cli application
@@ -294,6 +306,9 @@ fn main() {
 		.subcommand(SubCommand::with_name("update"))
 			.about("Clones from the master branch of the Elp repository and runs the make script")
 
+		.subcommand(SubCommand::with_name("save-auth"))
+			.about("Sets Git to save your authentication details")
+
 		.get_matches();
 
 	let verbosity = matches.occurrences_of("verbose") as usize;
@@ -310,5 +325,6 @@ fn main() {
 	} else if let Some(_matches) = matches.subcommand_matches("pull") {pull(matches.value_of("branch"), verbosity, quiet);}
 	else if let Some(_matches) = matches.subcommand_matches("setup") {setup();}
 	else if let Some(_matches) = matches.subcommand_matches("update") {update(verbosity);}
+	else if let Some(_matches) = matches.subcommand_matches("save-auth") {save_auth();}
 	else {elp_main(verbosity, quiet);}
 }
