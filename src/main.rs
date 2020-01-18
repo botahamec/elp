@@ -8,6 +8,7 @@
 extern crate clap; // this crate is used to hand command-line arguments
 use clap::{Arg, App, SubCommand};
 use std::process::{Command, Stdio}; // used to interact with command-line
+use std::io::stdin; // used to read user input
 
 
 // runs a command and waits for it to finish
@@ -19,6 +20,14 @@ fn command(command: &str, args: &[&str], error: &str) {
 		.spawn()
 		.expect(error);
 	command.wait().unwrap();
+}
+
+// prompts the user for input
+fn input(prompt: &str) -> String {
+	let mut answer = String::new();
+	print!("{} ", prompt);
+	stdin().read_line(&mut answer);
+	answer
 }
 
 // returns the output of a command
@@ -107,6 +116,14 @@ fn get_branch(branch: Option<&str>) -> String {
 	}
 }
 
+// sets a git config option
+fn set_config(prompt: &str, option: &str) {
+	let value = input(prompt);
+	if value == String::new() {return;} // stops if the string is empty
+	let value_str = value.as_str();
+	git(&["config", "--global", option, value_str], format!("Couldn't set {} properly", option).as_str());
+}
+
 // links a repository to github using a url
 fn start(url: &str, branch: Option<&str>, verbosity: usize, quiet: bool) {
 	git(&["init"], "failed to intialize the repository");
@@ -162,6 +179,14 @@ fn elp_main(verbosity: usize, quiet: bool) {
 	git_push(None, verbosity, quiet);
 }
 
+fn setup() {
+	println!("Use Ctrl+C at any time to exit. Just press enter without typing to not set the option");
+	set_config("Name:", "user.name");
+	set_config("Email:", "user.email");
+	set_config("Color (auto/false):", "color.ui");
+	set_config("Editor for Commit Messages:", "core.editor");
+}
+
 fn main() {
 
 	// creates the cli application
@@ -202,7 +227,7 @@ fn main() {
 				.short("q")
 				.long("quiet")
 				.help("Shows no output")))
-		
+
 		// the push command
 		.subcommand(SubCommand::with_name("push")
 			.about("Automatically add, commit, and push the repository")
@@ -230,7 +255,7 @@ fn main() {
 				.short("q")
 				.long("quiet")
 				.help("Shows no output")))
-		
+
 		// the pull command
 		.subcommand(SubCommand::with_name("pull")
 			.about("Automatically pull from the repository")
@@ -248,12 +273,16 @@ fn main() {
 				.long("quiet")
 				.help("Shows no output")))
 
+		// setup command
+		.subcommand(SubCommand::with_name("setup")
+			.about("Sets up Git options"))
+
 		// the update command
 		//.subcommand(SubCommand::with_name("update"))
 		//	.about("Clones from the master branch of the Elp repository and runs the make script")
-			
+
 		.get_matches();
-	
+
 	let verbosity = matches.occurrences_of("verbose") as usize;
 	let quietness = matches.occurrences_of("quiet") as usize;
 	if quietness > 0 && verbosity > 0 {panic!("Cannot be verbose and quiet at the same time!");}
@@ -266,6 +295,7 @@ fn main() {
 		let commit = matches.occurrences_of("no-commit") == 0;
 		push(matches.value_of("TITLE"), matches.value_of("message"), matches.value_of("branch"), commit, verbosity, quiet);
 	} else if let Some(_matches) = matches.subcommand_matches("pull") {pull(matches.value_of("branch"), verbosity, quiet);}
+	else if let Some(_matches) = matches.subcommand_matches("setup") {setup();}
 	//if let Some(_matches) = matches.subcommand_matches("update") {update(verbosity);}
 	else {elp_main(verbosity, quiet);}
 }
