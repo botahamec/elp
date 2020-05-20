@@ -60,7 +60,7 @@ fn git(args: &[&str], error: &str) {
 }
 
 fn git_add(verbosity: usize, quiet: bool) {
-	if quiet {git(&["add", "-A", "-q"], "failed to add files to the local repository");}
+	if quiet {git(&["add", "-A", "-q"], "");}
 	else {
 		match verbosity {
 			0 => git(&["add", "-A"], "failed to add files to the local repository"),
@@ -72,8 +72,8 @@ fn git_add(verbosity: usize, quiet: bool) {
 fn git_commit(title: &str, message: Option<&str>, verbosity: usize, quiet: bool) {
 	if quiet {
 		match message {
-			Some(m) => git(&["commit", "-a", "-q", "-m", title, "-m", m], "Failed to commit"),
-			None => git(&["commit", "-a", "-q", "-m", title], "Failed to commit")
+			Some(m) => git(&["commit", "-a", "-q", "-m", title, "-m", m], ""),
+			None => git(&["commit", "-a", "-q", "-m", title], "")
 		};
 	} else {
 		match message {
@@ -92,7 +92,7 @@ fn git_commit(title: &str, message: Option<&str>, verbosity: usize, quiet: bool)
 }
 
 fn add_origin(url: &str, verbosity: usize, quiet: bool) {
-	if quiet {git(&["remote", "-q", "add", "origin", url], "Failed to add the origin");}
+	if quiet {git(&["remote", "-q", "add", "origin", url], "");}
 	else {
 		match verbosity {
 			0 => git(&["remote", "add", "origin", url], "Failed to add the origin"),
@@ -102,7 +102,7 @@ fn add_origin(url: &str, verbosity: usize, quiet: bool) {
 }
 
 fn git_push(branch: Option<&str>, verbosity: usize, quiet: bool) {
-	if quiet {git(&["push", "-q", "-u", "origin", get_branch(branch).as_str()], "Failed to push to the remote repo");}
+	if quiet {git(&["push", "-q", "-u", "origin", get_branch(branch).as_str()], "");}
 	else {
 		match verbosity {
 			0 => git(&["push", "-u", "origin", get_branch(branch).as_str()], "Failed to push to the remote repo"),
@@ -112,7 +112,7 @@ fn git_push(branch: Option<&str>, verbosity: usize, quiet: bool) {
 }
 
 fn git_pull(branch: Option<&str>, verbosity: usize, quiet: bool) {
-	if quiet {git(&["pull", "-q", "origin", get_branch(branch).as_str()], "Failed to pull from the remote repository");}
+	if quiet {git(&["pull", "-q", "origin", get_branch(branch).as_str()], "");}
 	else {
 		match verbosity {
 			0 => git(&["pull", "origin", get_branch(branch).as_str()], "Failed to pull from the remote repo"),
@@ -146,22 +146,35 @@ fn start(url: &str, branch: Option<&str>, verbosity: usize, quiet: bool) {
 	git_push(branch, verbosity, quiet);
 }
 
-// add files, commits them, and pushes (with a message)
-fn push(title: Option<&str>, message: Option<&str>, branch: Option<&str>, commit: bool, verbosity: usize, quiet: bool) {
-	let push_title : &str;
-	if let Some(temp_title) = title {
-		push_title = temp_title;
+fn commit(title: Option<&str>, message: Option<&str>, should_add: bool, verbosity: usize, quiet: bool) {
+	if should_add {git_add(verbosity, quiet);}
+	let push_title = if let Some(temp_title) = title {
+		temp_title
 	} else {
-		push_title = "Auto-commit"
-	}
-	git_add(verbosity, quiet);
-	if commit {git_commit(push_title, message, verbosity, quiet);}
+		"Auto-commit"
+	};
+	git_commit(push_title, message, verbosity, quiet);
+}
+
+// add files, commits them, and pushes (with a message)
+fn push(title: Option<&str>, message: Option<&str>, branch: Option<&str>, should_commit: bool, should_add: bool, verbosity: usize, quiet: bool) {
+	if should_commit {commit(title, message, should_add, verbosity, quiet);}
 	git_push(branch, verbosity, quiet);
 }
 
 // pulls from remote repository
 fn pull(branch: Option<&str>, verbosity: usize, quiet: bool) {
 	git_pull(branch, verbosity, quiet)
+}
+
+fn fetch(branch: Option<&str>, verbosity: usize, quiet: bool) {
+	if verbosity > 0 {
+		git(&["fetch", "-v", "origin", get_branch(branch).as_str()], "Failed to fetch from origin");
+	} else if quiet {
+		git(&["fetch", "-q", "origin", get_branch(branch).as_str()], "");
+	} else {
+		git(&["fetch", "origin", get_branch(branch).as_str()], "Failed to fetch from origin");
+	}
 }
 
 // updates Elp
@@ -253,6 +266,39 @@ fn main() {
 				.long("quiet")
 				.help("Shows no output")))
 
+		.subcommand(SubCommand::with_name("add")
+			.about("Add all local files to git")
+			.arg(Arg::with_name("verbose")
+				.short("v")
+				.long("verbose")
+				.help("Prints out a lot of information"))
+			.arg(Arg::with_name("quiet")
+				.short("q")
+				.long("quiet")
+				.help("Shows no output")))
+
+		.subcommand(SubCommand::with_name("commit")
+			.about("Automatically add, commit, and push the repository")
+			.arg(Arg::with_name("TITLE")
+				.help("The title of the commit message. Simply, a description of what you did"))
+			.arg(Arg::with_name("message")
+				.short("m")
+				.long("commit-message")
+				.value_name("MESSAGE")
+				.help("An optional description of what you did before pushing"))
+			.arg(Arg::with_name("keep-files")
+				.short("k")
+				.long("keep-files")
+				.help("Does not add files"))
+			.arg(Arg::with_name("verbose")
+				.short("v")
+				.long("verbose")
+				.help("Prints out a lot of information"))
+			.arg(Arg::with_name("quiet")
+				.short("q")
+				.long("quiet")
+				.help("Shows no output")))
+
 		// the push command
 		.subcommand(SubCommand::with_name("push")
 			.about("Automatically add, commit, and push the repository")
@@ -271,7 +317,11 @@ fn main() {
 			.arg(Arg::with_name("no-commit")
 				.short("n")
 				.long("no-commit")
-				.help("Does not create a commit"))
+				.help("Does not create a commit or add new files to git"))
+			.arg(Arg::with_name("keep-files")
+				.short("k")
+				.long("keep-files")
+				.help("Does not add files"))
 			.arg(Arg::with_name("verbose")
 				.short("v")
 				.long("verbose")
@@ -289,6 +339,22 @@ fn main() {
 				.long("branch")
 				.value_name("BRANCH")
 				.help("The branch to pull from"))
+			.arg(Arg::with_name("verbose")
+				.short("v")
+				.long("verbose")
+				.help("Prints out a lot of information"))
+			.arg(Arg::with_name("quiet")
+				.short("q")
+				.long("quiet")
+				.help("Shows no output")))
+
+		.subcommand(SubCommand::with_name("fetch")
+			.about("Fetch from the origin")
+			.arg(Arg::with_name("branch")
+				.short("b")
+				.long("branch")
+				.value_name("BRANCH")
+				.help("The branch to fetch"))
 			.arg(Arg::with_name("verbose")
 				.short("v")
 				.long("verbose")
@@ -319,10 +385,16 @@ fn main() {
 	// runs the specified command
 	if let Some(matches) = matches.subcommand_matches("start") {
 		start(matches.value_of("url").unwrap(), matches.value_of("branch"), verbosity, quiet);
+	} else if let Some(_matches) = matches.subcommand_matches("commit") {
+		let add = matches.occurrences_of("keep-files") == 0;
+		commit(matches.value_of("TITLE"), matches.value_of("message"), add, verbosity, quiet);
 	} else if let Some(matches) = matches.subcommand_matches("push") {
 		let commit = matches.occurrences_of("no-commit") == 0;
-		push(matches.value_of("TITLE"), matches.value_of("message"), matches.value_of("branch"), commit, verbosity, quiet);
+		let add = matches.occurrences_of("keep-files") == 0;
+		push(matches.value_of("TITLE"), matches.value_of("message"), matches.value_of("branch"), commit, add, verbosity, quiet);
 	} else if let Some(_matches) = matches.subcommand_matches("pull") {pull(matches.value_of("branch"), verbosity, quiet);}
+	else if let Some(_matches) = matches.subcommand_matches("add") {git_add(verbosity, quiet)}
+	else if let Some(_matches) = matches.subcommand_matches("fetch") {fetch(matches.value_of("branch"), verbosity, quiet)}
 	else if let Some(_matches) = matches.subcommand_matches("setup") {setup();}
 	else if let Some(_matches) = matches.subcommand_matches("update") {update(verbosity);}
 	else if let Some(_matches) = matches.subcommand_matches("save-auth") {save_auth();}
