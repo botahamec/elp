@@ -386,7 +386,7 @@ fn main() {
 	// runs the specified command
 	if let Some(matches) = matches.subcommand_matches("start") {
 		start(matches.value_of("url").unwrap(), matches.value_of("branch"), verbosity, quiet);
-	} else if let Some(_matches) = matches.subcommand_matches("commit") {
+	} else if let Some(matches) = matches.subcommand_matches("commit") {
 		let add = matches.occurrences_of("keep-files") == 0;
 		commit(matches.value_of("TITLE"), matches.value_of("message"), add, verbosity, quiet);
 	} else if let Some(matches) = matches.subcommand_matches("push") {
