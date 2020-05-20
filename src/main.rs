@@ -147,6 +147,7 @@ fn start(url: &str, branch: Option<&str>, verbosity: usize, quiet: bool) {
 }
 
 fn commit(title: Option<&str>, message: Option<&str>, should_add: bool, verbosity: usize, quiet: bool) {
+	println!("{}", should_add);
 	if should_add {git_add(verbosity, quiet);}
 	let push_title = if let Some(temp_title) = title {
 		temp_title
@@ -278,7 +279,7 @@ fn main() {
 				.help("Shows no output")))
 
 		.subcommand(SubCommand::with_name("commit")
-			.about("Automatically add, commit, and push the repository")
+			.about("Automatically add and commit to the local repository")
 			.arg(Arg::with_name("TITLE")
 				.help("The title of the commit message. Simply, a description of what you did"))
 			.arg(Arg::with_name("message")
