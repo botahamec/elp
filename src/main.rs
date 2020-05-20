@@ -147,6 +147,7 @@ fn start(url: &str, branch: Option<&str>, verbosity: usize, quiet: bool) {
 }
 
 fn commit(title: Option<&str>, message: Option<&str>, should_add: bool, verbosity: usize, quiet: bool) {
+	println!("{}", should_add);
 	if should_add {git_add(verbosity, quiet);}
 	let push_title = if let Some(temp_title) = title {
 		temp_title
